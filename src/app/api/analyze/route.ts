@@ -93,6 +93,9 @@ export async function POST(req: Request) {
       recommendations: insights.recommendations
     });
   } catch {
-    return NextResponse.json(sampleResult);
+    return NextResponse.json(
+      { error: "Unable to analyze this role right now. Please try again in a moment." },
+      { status: 500 }
+    );
   }
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { InsightSection } from "@/components/InsightSection";
 import { RecommendationSection } from "@/components/RecommendationSection";
 import { ResultSummaryCard } from "@/components/ResultSummaryCard";
@@ -5,9 +8,20 @@ import { TaskBreakdownTable } from "@/components/TaskBreakdownTable";
 import { sampleResult } from "@/lib/sampleData";
 import { AnalysisResponse } from "@/lib/types";
 
-export default async function ResultsPage({ searchParams }: { searchParams: Promise<{ data?: string }> }) {
-  const params = await searchParams;
-  const result: AnalysisResponse = params.data ? JSON.parse(decodeURIComponent(params.data)) : sampleResult;
+export default function ResultsPage() {
+  const [result, setResult] = useState<AnalysisResponse>(sampleResult);
+
+  useEffect(() => {
+    const rawResult = sessionStorage.getItem("analysisResult");
+    if (!rawResult) return;
+
+    try {
+      const parsed = JSON.parse(rawResult) as AnalysisResponse;
+      setResult(parsed);
+    } catch {
+      sessionStorage.removeItem("analysisResult");
+    }
+  }, []);
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">

@@ -24,20 +24,32 @@ export function JobInputForm() {
     setError("");
     setLoading(true);
 
-    const response = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        job_title: jobTitle,
-        industry,
-        experience_level: experienceLevel,
-        daily_work_description: dailyWorkDescription
-      })
-    });
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          job_title: jobTitle,
+          industry,
+          experience_level: experienceLevel,
+          daily_work_description: dailyWorkDescription
+        })
+      });
 
-    const result = await response.json();
-    const params = new URLSearchParams({ data: encodeURIComponent(JSON.stringify(result)) });
-    router.push(`/results?${params.toString()}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result?.error ?? "Unable to analyze this role right now. Please try again.");
+        return;
+      }
+
+      sessionStorage.setItem("analysisResult", JSON.stringify(result));
+      router.push("/results");
+    } catch {
+      setError("Unable to analyze this role right now. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
