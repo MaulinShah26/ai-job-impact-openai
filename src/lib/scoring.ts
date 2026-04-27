@@ -10,6 +10,12 @@ const WEIGHTS = {
   physical_complexity: 0.15
 } as const;
 
+const PROTECTIVE_DIMENSIONS: Array<keyof TaskScores> = [
+  "context_dependency",
+  "accountability",
+  "human_trust"
+];
+
 export function getRiskBand(score: number): TaskRiskLevel {
   if (score <= 25) return "Low";
   if (score <= 50) return "Moderate";
@@ -19,7 +25,10 @@ export function getRiskBand(score: number): TaskRiskLevel {
 
 export function calculateTaskRisk(scores: TaskScores) {
   const weightedScore = Object.entries(WEIGHTS).reduce((sum, [key, weight]) => {
-    return sum + scores[key as keyof TaskScores] * weight;
+    const dimension = key as keyof TaskScores;
+    const rawScore = scores[dimension];
+    const adjustedScore = PROTECTIVE_DIMENSIONS.includes(dimension) ? 6 - rawScore : rawScore;
+    return sum + adjustedScore * weight;
   }, 0);
 
   const riskPercentage = Math.round((((weightedScore - 1) / 4) * 100 + Number.EPSILON) * 100) / 100;
